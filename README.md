@@ -5,7 +5,7 @@
 
 | | |
 |---|---|
-| **Herramientas** | Modo Auditoría, Sysprep, DISM, PnPUtil, Ventoy |
+| **Herramientas** | Modo Auditoría, Sysprep, DISM, PnPUtil |
 | **Resultado** | Imagen `.wim` reutilizable en múltiples equipos |
 | **Beneficio** | Alistar y configurar **una sola vez** lo que normalmente se hace equipo por equipo |
 
@@ -42,55 +42,6 @@ flowchart LR
 
 2. **Verificar aplicaciones y procesos activos de la Microsoft Store.**
    Los paquetes AppX instalados, actualizados o en estado *staged* pueden impedir que Sysprep finalice. Deben revisarse y purgarse antes de cerrar la imagen.
-
----
-
-## Medio de arranque con Ventoy
-
-El archivo `.wim` no es una imagen de arranque, por lo que **no se escribe en el USB con herramientas como Rufus**, orientadas a archivos ISO. Se recomienda preparar la unidad con **Ventoy**: se instala una sola vez y, a partir de ahí, la ISO, el `.wim` y los scripts se copian como archivos normales, sin reformatear la unidad.
-
-El mismo medio se utiliza para capturar la imagen ([paso 12](docs/README-02.md#12-capturar-la-imagen-del-sistema)) y para aplicarla en los equipos destino.
-
-**Estructura recomendada de la unidad**
-
-```text
-Ventoy
-├── 01.bat
-├── install.wim
-└── operating-system
-    └── Windows11_Client_x64_es-mx_26300_9457.iso
-```
-
-| Elemento | Función |
-|---|---|
-| `Windows11_Client_x64_es-mx_26300_9457.iso` | Permite arrancar el entorno de instalación de Windows (WinPE), desde donde se abre la consola. |
-| `install.wim` | Imagen del sistema ya generalizado. |
-| `01.bat` | Script de despliegue, ubicado en la misma unidad que el `.wim`. |
-
-**Uso del medio**
-
-1. Arranque el equipo desde la unidad y seleccione la ISO de Windows en el menú de Ventoy.
-2. En la pantalla inicial de instalación de Windows, presione `Shift + F10` para abrir la consola.
-3. Identifique la letra de la unidad Ventoy, que contiene el `.wim` y el script:
-
-   ```cmd
-   diskpart
-   list volume
-   exit
-   ```
-
-4. Cambie a esa unidad (por ejemplo, `D:`) y ejecute el script:
-
-   ```cmd
-   D:
-   01.bat
-   ```
-
-> [!IMPORTANT]
-> La primera instalación de Ventoy **formatea la unidad**. Respalde antes cualquier información que necesite conservar.
-
-> [!NOTE]
-> En equipos con Secure Boot habilitado, Ventoy requiere registrar su clave en el primer arranque. Consulte la documentación oficial de Ventoy.
 
 ---
 
@@ -139,7 +90,7 @@ Ejecute el `.exe` en una estación de trabajo técnica. La carpeta resultante oc
 
 ### 3. Instalar en el equipo destino
 
-Copie la carpeta (`DriversLenovo`) a la unidad externa junto al `.wim` (ver [Medio de arranque con Ventoy](#medio-de-arranque-con-ventoy)), **fuera de la imagen**. Con la imagen ya aplicada, abra **CMD como administrador** y ejecute:
+Copie la carpeta (`DriversLenovo`) a un USB o disco externo junto al `.wim`, **fuera de la imagen**. Con la imagen ya aplicada, abra **CMD como administrador** y ejecute:
 
 ```cmd
 pnputil /add-driver "E:\DriversLenovo\*.inf" /subdirs /install
