@@ -1,0 +1,22 @@
+# Archivos de imagen del sistema (excluidos por superar el límite de tamaño)
+*.wim
+*.esd
+*.swm
+
+# Directorios temporales de trabajo de DISM
+Scratch/
+/Scratch
+
+# Registros y logs del sistema operativo generados durante las pruebas
+*.log
+Panther/
+Logs/
+
+# Archivos temporales del sistema y editores
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.tmp
+.vscode/
+.idea/
