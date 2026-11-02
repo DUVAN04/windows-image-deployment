@@ -1,15 +1,3 @@
-> [!IMPORTANT]
-> Ejecute los pasos en el orden indicado. A partir del paso 11 **no se debe volver a iniciar Windows**.
-
-## Resumen
-
-| | |
-|---|---|
-| **Punto de partida** | Windows 11 recién instalado, en la pantalla inicial de configuración (OOBE) |
-| **Herramientas** | Modo Auditoría, Sysprep, DISM |
-| **Necesita** | USB o disco externo con espacio libre y un medio de arranque WinPE |
-| **Resultado** | Archivo `install.wim` listo para desplegar |
-
 ## Flujo del procedimiento
 
 ```mermaid
