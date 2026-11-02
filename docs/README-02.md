@@ -39,7 +39,7 @@ net stop cryptsvc
 > **Resultado esperado:** la consola confirma que cada servicio se detuvo o no se ha iniciado.
 
 <p align="center">
-  <img src="../pictures/sysprep/05.png" width="32%" alt="Limpieza">
+  <img src="../pictures/sysprep/05.png" width="50%" alt="Limpieza">
 </p>
 
 
@@ -55,7 +55,7 @@ dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 > `/ResetBase` impide desinstalar las actualizaciones ya instaladas.
 
 <p align="center">
-  <img src="../pictures/sysprep/06.png" width="32%" alt="Limpieza 02">
+  <img src="../pictures/sysprep/06.png" width="50%" alt="Limpieza 02">
 </p>
 
 
