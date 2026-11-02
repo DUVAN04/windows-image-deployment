@@ -1,34 +1,34 @@
 # Captura y Despliegue de Imágenes Windows 11 (.wim)
 
-Procedimiento estandarizado para preparar, generalizar y capturar una imagen de Windows con **Sysprep** y **DISM**, orientado al aprovisionamiento masivo de equipos corporativos.
-
 > [!NOTE]
 > Este procedimiento **no genera una ISO**. El resultado final es un archivo **`.wim`** con el sistema ya preparado y generalizado.
-
----
 
 ## Resumen
 
 | | |
 |---|---|
-| **Objetivo** | Entregar equipos con una configuración idéntica, lista para usar |
 | **Herramientas** | Modo Auditoría, Sysprep, DISM, PnPUtil |
 | **Resultado** | Imagen `.wim` reutilizable en múltiples equipos |
 | **Beneficio** | Menos tiempo de alistamiento y menos errores manuales |
 
-**Flujo general:**
-`Modo Auditoría` → `Limpieza` → `Sysprep` → `Captura con DISM` → `Despliegue` → `Drivers`
+## Flujo general
 
----
+```mermaid
+flowchart LR
+    A[Crear imagen en Modo Auditoría] --> B[Limpieza y Sysprep]
+    B --> C[Captura con DISM]
+    C --> D[Despliegue en equipo destino]
+    D --> E{"¿Dónde se creó la imagen?"}
+    E -->|Equipo físico| F[Listo: drivers incluidos]
+    E -->|Máquina virtual| G[Instalar drivers offline]
+```
 
 ## Documentación
 
 | Documento | Contenido |
 |---|---|
-| **README.md** (este archivo) | Requisitos previos, estrategia de drivers y descarga offline |
+| **README.md** (este archivo) | Requisitos previos y estrategia de drivers |
 | [`docs/README-02.md`](docs/README-02.md) | Guía paso a paso: auditoría, limpieza, generalización y captura |
-
-> Se recomienda leer este documento antes de pasar a la guía de ejecución.
 
 ---
 
@@ -36,30 +36,29 @@ Procedimiento estandarizado para preparar, generalizar y capturar una imagen de 
 
 Dos condiciones evitan fallos en Sysprep y una imagen defectuosa:
 
-**1. Instalar todo el software en `C:\Program Files`**
-Evite los instaladores *User Setup* (por ejemplo, Visual Studio Code en su modo por defecto): instalan en `%LocalAppData%`, solo para el usuario actual, y pueden hacer fallar Sysprep. Use siempre el instalador *System* (para todos los usuarios).
+- **Instalar todo el software en `C:\Program Files`.**
+  Evite los instaladores *User Setup* (por ejemplo, Visual Studio Code en su modo por defecto): instalan en `%LocalAppData%`, solo para el usuario actual, y pueden hacer fallar Sysprep. Use siempre el instalador *System* (para todos los usuarios).
 
-**2. Evitar bloqueos por aplicaciones de la Microsoft Store**
-Los paquetes AppX instalados o actualizados durante la auditoría pueden impedir que Sysprep finalice. La purga se explica en [`docs/README-02.md`](docs/README-02.md).
+- **Evitar bloqueos por aplicaciones de la Microsoft Store.**
+  Los paquetes AppX instalados o actualizados durante la auditoría pueden impedir que Sysprep finalice. La purga se explica en [`docs/README-02.md`](docs/README-02.md).
 
 ---
 
-## Hardware y drivers
+## Drivers: depende de dónde se creó la imagen
 
-| | Equipo físico (recomendado) | Máquina virtual (alternativa) |
+| Entorno | ¿Incluye drivers? | Qué hacer |
 |---|---|---|
-| **Drivers** | Incluidos desde el fabricante | Ninguno (sistema limpio) |
-| **Tamaño del `.wim`** | Controlado | Crece si se inyectan drivers en masa |
-| **Alistamiento final** | Más rápido | Requiere instalar drivers en destino |
+| **Equipo físico** (recomendado) | **Sí.** Se instalan con la herramienta del fabricante (ej. *Lenovo System Update*), quedan en el *Driver Store* y viajan dentro del `.wim`. Sirven para equipos de la misma familia. | Nada adicional |
+| **Máquina virtual** | **No.** La imagen queda sin drivers y su instalación en el equipo destino toma más tiempo. | Instalar el paquete offline del fabricante (ver abajo) |
 
-- **Físico:** al ejecutar la herramienta del fabricante (por ejemplo *Lenovo System Update*) sobre un equipo representativo, los controladores quedan en el *Driver Store* y viajan dentro del `.wim`.
-- **Virtual:** no inyecte drivers de varias marcas en la VM; infla la imagen y reduce su estabilidad. Resuelva los drivers **fuera de la imagen**, con el paquete corporativo del fabricante.
+> [!WARNING]
+> No inyecte drivers de varios fabricantes dentro de la máquina virtual: infla el `.wim` y compromete su estabilidad.
 
 ---
 
-## Drivers Lenovo offline (paquete SCCM)
+## Paquete offline de drivers Lenovo
 
-Cuando la imagen se creó en un entorno limpio o virtual, los drivers se instalan después con el paquete oficial de Lenovo.
+**Aplica solo si la imagen se creó en una máquina virtual.** Antes de empezar, valide si el fabricante ofrece un paquete corporativo de despliegue; en Lenovo es el paquete SCCM.
 
 ### 1. Descargar el paquete
 
@@ -91,12 +90,7 @@ Copie la carpeta (`DriversLenovo`) a un USB o disco externo junto al `.wim`, **f
 pnputil /add-driver "E:\DriversLenovo\*.inf" /subdirs /install
 ```
 
-> Reemplace `E:` por la letra que Windows asigne a su unidad externa.
-
-| Parámetro | Función |
-|---|---|
-| `/subdirs` | Incluye todas las subcarpetas |
-| `/install` | Instala los drivers en los dispositivos detectados |
+Reemplace `E:` por la letra que Windows asigne a su unidad externa. El parámetro `/subdirs` incluye todas las subcarpetas e `/install` instala los drivers en los dispositivos detectados.
 
 <table>
   <tr>
