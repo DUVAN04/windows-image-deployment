@@ -19,10 +19,8 @@ En la pantalla OOBE, presione `Ctrl + Shift + F3`. El equipo reinicia y entra en
 Instale el software corporativo y aplique los ajustes de Windows que requiera su empresa. Verifique que cada aplicación quede en `C:\Program Files` o `C:\Program Files (x86)`.
 
 <p align="center">
-  <img src="../pictures/sysprep/software/01.png" width="24%" alt="Software 1">
-  <img src="../pictures/sysprep/software/02.png" width="24%" alt="Software 2">
-  <img src="../pictures/sysprep/software/03.png" width="24%" alt="Software 3">
-  <img src="../pictures/sysprep/software/04.png" width="24%" alt="Software 4">
+  <img src="../pictures/sysprep/software/02.png" width="32%" alt="Software 2">
+  <img src="../pictures/sysprep/software/04.png" width="32%" alt="Software 4">
 </p>
 
 ---
