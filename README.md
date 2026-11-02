@@ -39,6 +39,10 @@ Para el caso específico de equipos Lenovo, es posible reducir el tiempo de bús
 
 1. **Validación previa:** Ingrese al portal de soporte oficial de Lenovo con el modelo exacto o número de serie del equipo.
 2. **Descarga del paquete:** Acceda a la categoría **Gestión de Empresas** y descargue el paquete de controladores para despliegue (ejemplo: *SCCM Package for Windows 11 Version 25H2*, instalador `.exe`.
+
+  ![Gestión de Empresas](pictures/packages-offline-SCCM/01.png)
+   ![Paquete SCCM](pictures/packages-offline-SCCM/02.png)
+
 3. **Extracción de controladores:** Descomprima el archivo `.exe` en su estación de trabajo. El volumen descomprimido aumentará considerablemente (~3 GB a 5 GB) al exponer la estructura de archivos de controlador (`.inf`).
 4. **Almacenamiento externo:** Copie la carpeta descomprimida directamente en el medio de almacenamiento externo (USB/HDD) junto al archivo `.wim` (fuera de la imagen).
 5. **Inyección post-despliegue:** Una vez aplicada la imagen `.wim` e iniciado el equipo destino, ejecute la instalación directa de controladores desde la consola con privilegios de administrador mediante la herramienta nativa `PnPUtil`:
