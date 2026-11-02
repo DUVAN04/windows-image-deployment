@@ -17,7 +17,6 @@ flowchart LR
 
 Presione `Ctrl + Shift + F3`. El equipo se reinicia e ingresa al Modo Auditoría con la cuenta de administrador integrada.
 
-Cierre la ventana de Sysprep que aparece automáticamente; se utilizará más adelante.
 
 <table>
   <tr>
@@ -29,27 +28,26 @@ Cierre la ventana de Sysprep que aparece automáticamente; se utilizará más ad
 
 ### 2. Instalar aplicaciones y configurar Windows
 
-**Ejecutar en:** Modo Auditoría
-
 Instale el software corporativo y aplique los ajustes de Windows que requiera su empresa.
 
+
 > [!IMPORTANT]
-> Instale todo en `C:\Program Files` o `C:\Program Files (x86)` y use instaladores para todos los usuarios (*System*), no *User Setup*. Detalle en [Requisitos críticos](../README.md#requisitos-críticos).
+[Requisitos críticos](../README.md#requisitos-críticos).
+
 
 <table>
   <tr>
-    <td align="center"><img src="../pictures/sysprep/software/02.png" alt="Instalación de aplicaciones"><br><sub>Instalación de aplicaciones</sub></td>
-    <td align="center"><img src="../pictures/sysprep/software/04.png" alt="Configuración de software"><br><sub>Configuración de software</sub></td>
+    <td align="center"><img src="../pictures/sysprep/software/02.png" alt="Instalación de aplicaciones"><br><sub>Instalación de aplicaciones 01</sub></td>
+    <td align="center"><img src="../pictures/sysprep/software/04.png" alt="Configuración de software"><br><sub>Instalación de aplicaciones 02</sub></td>
   </tr>
 </table>
 
 ---
 
-## Fase 2 · Limpieza
+## Fase 2 · Limpieza **Ejecutar en:** CMD como administrador
 
 ### 3. Detener servicios de actualización
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 net stop wuauserv
@@ -61,7 +59,6 @@ net stop cryptsvc
 
 ### 4. Limpiar el almacén de componentes
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase
@@ -72,14 +69,8 @@ dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 > [!NOTE]
 > `/ResetBase` impide desinstalar las actualizaciones ya instaladas.
 
-<p align="center">
-  <img src="../pictures/sysprep/06.png" width="70%" alt="Limpieza del almacén de componentes"><br>
-  <sub>Limpieza del almacén de componentes</sub>
-</p>
-
 ### 5. Limpiar la caché de Windows Update
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 rd /s /q C:\Windows\SoftwareDistribution\Download
@@ -90,7 +81,6 @@ Se eliminan los archivos descargados, no el historial de actualizaciones instala
 
 ### 6. Ejecutar la limpieza de disco
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 cleanmgr /sageset:1
@@ -101,7 +91,6 @@ En la ventana de `sageset`, seleccione las categorías a limpiar y confirme. Des
 
 ### 7. Eliminar temporales y papelera
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 del /q /f /s "%TEMP%\*"
@@ -109,39 +98,29 @@ del /q /f /s "C:\Windows\Temp\*"
 rd /s /q C:\$Recycle.Bin
 ```
 
-Los archivos en uso o protegidos por Windows pueden permanecer.
-
 ### 8. Eliminar registros de eventos
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 for /F "tokens=*" %G in ('wevtutil el') do wevtutil cl "%G"
 ```
 
-En un archivo `.bat`, use `%%G`.
-
-> [!WARNING]
-> Esta operación elimina información histórica útil para auditorías, investigación de incidentes y diagnóstico. Ejecútela únicamente con autorización y conforme a la política de conservación de registros de la organización.
 
 ### 9. Eliminar logs previos de Sysprep y DISM
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 del /q /f "C:\Windows\System32\Sysprep\Panther\*.*"
 del /q /f "C:\Windows\Logs\DISM\*.*"
 ```
 
-Conserve antes los registros que puedan requerirse para auditoría o diagnóstico.
-
 ---
 
-## Fase 3 · Generalización
+## Fase 3 · Generalización **Ejecutar en:** PowerShell como administrador
+
 
 ### 10. Verificar paquetes AppX
 
-**Ejecutar en:** PowerShell como administrador
 
 Los paquetes AppX en estado *staged* pueden bloquear Sysprep. Verifique si existe alguno:
 
@@ -171,9 +150,12 @@ Remove-AppxProvisionedPackage -Online -PackageName "NombreDelPaquete"
 > [!IMPORTANT]
 > Retirar un paquete instalado y retirar su aprovisionamiento son operaciones distintas. Verifique ambas condiciones antes de continuar.
 
+
+
+## Fase 4 · Captura **Ejecutar en:** CMD como administrador
+
 ### 11. Generalizar con Sysprep
 
-**Ejecutar en:** CMD como administrador
 
 ```cmd
 C:\Windows\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown
@@ -184,15 +166,13 @@ C:\Windows\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown
 > [!CAUTION]
 > **No vuelva a iniciar Windows después de este paso.** Arranque directamente desde WinPE; de lo contrario, el sistema entra al OOBE y el proceso debe repetirse.
 
-Si Sysprep falla, el detalle queda en `C:\Windows\System32\Sysprep\Panther\setuperr.log`.
+Si Sysprep falla, el detalle queda en `C:\Windows\System32\Sysprep\Panther\.log`.
 
 ---
 
-## Fase 4 · Captura
 
-### 12. Capturar la imagen del sistema
+### 12. Capturar la imagen del sistema **Ejecutar en:** CMD en WinPE
 
-**Ejecutar en:** CMD en WinPE
 
 Arranque el equipo desde WinPE o un USB booteable. Identifique las unidades con `diskpart` → `list volume`, ya que las letras pueden diferir de las usadas en Windows.
 
@@ -229,24 +209,6 @@ dism /Capture-Image /ImageFile:D:\install.wim /CaptureDir:C:\ /Name:"Windows Per
   </tr>
 </table>
 
-### 13. Comprobar el archivo generado (opcional)
-
-**Ejecutar en:** CMD en WinPE
-
-```cmd
-dir D:\install.wim
-dism /Get-WimInfo /WimFile:D:\install.wim
-```
-
-| Resultado de `dir` | Significado |
-|---|---|
-| Archivo inexistente | La captura no generó el archivo en la ruta indicada. |
-| 0 bytes | La captura no produjo una imagen válida. |
-| Más de 0 bytes | Existe contenido; `/Get-WimInfo` confirma su estructura. |
-
-**Resultado esperado:** `/Get-WimInfo` lista el índice 1 con el nombre y la descripción definidos en la captura.
-
----
 
 El archivo `install.wim` queda disponible para su implementación en los equipos de destino.
 
