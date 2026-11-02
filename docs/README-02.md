@@ -11,43 +11,35 @@ flowchart LR
 
 ## Fase 1 · Preparación
 
-### 1. Ingresar al Modo Auditoría
+### 1. Modo Auditoría
 
-**Ejecutar en:** pantalla OOBE (configuración inicial de Windows)
+En la pantalla OOBE, presione `Ctrl + Shift + F3`. El equipo reinicia y entra en Modo Auditoría. Cierre la ventana de Sysprep que aparece.
 
-Presione `Ctrl + Shift + F3`. El equipo se reinicia e ingresa al Modo Auditoría con la cuenta de administrador integrada.
+<p align="center">
+  <img src="../pictures/sysprep/01.png" width="32%" alt="Modo Auditoría 1">
+  <img src="../pictures/sysprep/02.png" width="32%" alt="Modo Auditoría 2">
+  <img src="../pictures/sysprep/03.png" width="32%" alt="Modo Auditoría 3">
+</p>
 
-
-<table>
-  <tr>
-    <td align="center"><img src="../pictures/sysprep/01.png" alt="Inicio del Modo Auditoría"><br><sub>Inicio del Modo Auditoría</sub></td>
-    <td align="center"><img src="../pictures/sysprep/02.png" alt="Ingreso al Modo Auditoría"><br><sub>Ingreso al Modo Auditoría</sub></td>
-    <td align="center"><img src="../pictures/sysprep/03.png" alt="Escritorio en Modo Auditoría"><br><sub>Escritorio en Modo Auditoría</sub></td>
-  </tr>
-</table>
-
-### 2. Instalar aplicaciones y configurar Windows
+### 2. Instalación de aplicaciones
 
 Instale el software corporativo y aplique los ajustes de Windows que requiera su empresa.
 
-
 > [!IMPORTANT]
-[Requisitos críticos](../README.md#requisitos-críticos).
+> Instale todo en `C:\Program Files` con instaladores para todos los usuarios (*System*), no *User Setup*. Ver [Requisitos críticos](../README.md#requisitos-críticos).
 
-
-<table>
-  <tr>
-    <td align="center"><img src="../pictures/sysprep/software/02.png" alt="Instalación de aplicaciones"><br><sub>Instalación de aplicaciones 01</sub></td>
-    <td align="center"><img src="../pictures/sysprep/software/04.png" alt="Configuración de software"><br><sub>Instalación de aplicaciones 02</sub></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="../pictures/sysprep/software/02.png" width="45%" alt="Instalación de aplicaciones 1">
+  <img src="../pictures/sysprep/software/04.png" width="45%" alt="Instalación de aplicaciones 2">
+</p>
 
 ---
 
-## Fase 2 · Limpieza **Ejecutar en:** CMD como administrador
+## Fase 2 · Limpieza
 
 ### 3. Detener servicios de actualización
 
+**Consola:** CMD como administrador
 
 ```cmd
 net stop wuauserv
@@ -55,42 +47,39 @@ net stop bits
 net stop cryptsvc
 ```
 
-**Resultado esperado:** Windows confirma que cada servicio se detuvo o que no estaba iniciado.
-
 ### 4. Limpiar el almacén de componentes
 
+**Consola:** CMD como administrador
 
 ```cmd
 dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 ```
 
-**Resultado esperado:** la operación llega al 100 % y finaliza correctamente.
-
-> [!NOTE]
-> `/ResetBase` impide desinstalar las actualizaciones ya instaladas.
+El proceso debe llegar al 100 %. `/ResetBase` impide desinstalar las actualizaciones ya instaladas.
 
 ### 5. Limpiar la caché de Windows Update
 
+**Consola:** CMD como administrador
 
 ```cmd
 rd /s /q C:\Windows\SoftwareDistribution\Download
 mkdir C:\Windows\SoftwareDistribution\Download
 ```
 
-Se eliminan los archivos descargados, no el historial de actualizaciones instaladas.
+### 6. Limpiar el disco
 
-### 6. Ejecutar la limpieza de disco
-
+**Consola:** CMD como administrador
 
 ```cmd
 cleanmgr /sageset:1
 cleanmgr /sagerun:1
 ```
 
-En la ventana de `sageset`, seleccione las categorías a limpiar y confirme. Después, `sagerun` ejecuta la limpieza con esas opciones.
+En la ventana de `sageset`, marque todas las categorías y acepte.
 
 ### 7. Eliminar temporales y papelera
 
+**Consola:** CMD como administrador
 
 ```cmd
 del /q /f /s "%TEMP%\*"
@@ -100,14 +89,18 @@ rd /s /q C:\$Recycle.Bin
 
 ### 8. Eliminar registros de eventos
 
+**Consola:** CMD como administrador
 
 ```cmd
 for /F "tokens=*" %G in ('wevtutil el') do wevtutil cl "%G"
 ```
 
+> [!WARNING]
+> Este paso y el siguiente eliminan registros que pueden ser necesarios para auditoría. Ejecútelos solo con autorización y conforme a la política de conservación de la organización.
 
-### 9. Eliminar logs previos de Sysprep y DISM
+### 9. Eliminar logs de Sysprep y DISM
 
+**Consola:** CMD como administrador
 
 ```cmd
 del /q /f "C:\Windows\System32\Sysprep\Panther\*.*"
@@ -116,100 +109,76 @@ del /q /f "C:\Windows\Logs\DISM\*.*"
 
 ---
 
-## Fase 3 · Generalización **Ejecutar en:** PowerShell como administrador
-
+## Fase 3 · Generalización
 
 ### 10. Verificar paquetes AppX
 
+**Consola:** PowerShell como administrador
 
-Los paquetes AppX en estado *staged* pueden bloquear Sysprep. Verifique si existe alguno:
+Verifique si hay paquetes en estado *staged* o provisionados:
 
 ```powershell
 Get-AppxPackage -AllUsers |
 Where-Object {$_.PackageUserInformation -match "Staged"} |
 Select-Object Name, PackageFullName
-```
 
-Revise también los paquetes provisionados (la lista es completa; retire únicamente los problemáticos):
-
-```powershell
 Get-AppxProvisionedPackage -Online |
 Select-Object DisplayName, PackageName
 ```
 
-Si no aparece ningún paquete problemático, continúe con el paso 11. De lo contrario, evalúe su procedencia y dependencias antes de retirarlo:
+Si no aparece ninguno que cause conflicto, continúe con el paso 11. Si aparece alguno, retírelo (instalado y provisionado son operaciones distintas):
 
 ```powershell
-# Paquete instalado
 Remove-AppxPackage -Package "NombreCompletoDelPaquete" -AllUsers
-
-# Paquete provisionado
 Remove-AppxProvisionedPackage -Online -PackageName "NombreDelPaquete"
 ```
 
-> [!IMPORTANT]
-> Retirar un paquete instalado y retirar su aprovisionamiento son operaciones distintas. Verifique ambas condiciones antes de continuar.
-
-
-
-## Fase 4 · Captura **Ejecutar en:** CMD como administrador
-
 ### 11. Generalizar con Sysprep
 
+**Consola:** CMD como administrador
 
 ```cmd
 C:\Windows\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown
 ```
 
-**Resultado esperado:** el equipo se apaga automáticamente al finalizar.
+El equipo se apaga al finalizar. Si Sysprep falla, revise `C:\Windows\System32\Sysprep\Panther\setuperr.log`.
 
 > [!CAUTION]
-> **No vuelva a iniciar Windows después de este paso.** Arranque directamente desde WinPE; de lo contrario, el sistema entra al OOBE y el proceso debe repetirse.
-
-Si Sysprep falla, el detalle queda en `C:\Windows\System32\Sysprep\Panther\.log`.
+> **No inicie Windows después de este paso.** Si arranca normalmente, el sistema entra al OOBE y todo el proceso debe repetirse.
 
 ---
 
+## Fase 4 · Captura
 
-### 12. Capturar la imagen del sistema **Ejecutar en:** CMD en WinPE
+### 12. Capturar la imagen
 
+**Consola:** CMD en WinPE
 
-Arranque el equipo desde WinPE o un USB booteable. Identifique las unidades con `diskpart` → `list volume`, ya que las letras pueden diferir de las usadas en Windows.
-
-| Elemento | Unidad usada en esta guía |
-|---|---|
-| **Origen** | `C:\` — partición de Windows generalizada |
-| **Destino** | `D:\` — unidad donde se guarda el WIM |
-| **Temporal** | `D:\Scratch` — directorio de trabajo de DISM |
-
-El origen y el destino deben ser particiones distintas, y el destino debe tener espacio suficiente.
+Arranque desde WinPE o un USB booteable. Verifique las letras de unidad con `diskpart` → `list volume` y ajuste los comandos: aquí `C:` es Windows y `D:` es la unidad externa.
 
 ```cmd
 mkdir D:\Scratch
 dism /Capture-Image /ImageFile:D:\install.wim /CaptureDir:C:\ /Name:"Windows Personalizado Rapido" /Description:"Imagen Sysprep optimizada" /Compress:fast /ScratchDir:D:\Scratch
 ```
 
-| Parámetro | Descripción |
-|---|---|
-| `/Capture-Image` | Inicia la captura de la partición de origen. |
-| `/ImageFile` | Ruta y nombre del archivo WIM. |
-| `/CaptureDir` | Partición de Windows que se captura. |
-| `/Name` | Nombre de la imagen. |
-| `/Description` | Descripción de la imagen. |
-| `/Compress:fast` | Compresión rápida; reduce el tiempo frente a `max`. |
-| `/ScratchDir` | Directorio temporal utilizado por DISM. |
-
 > [!IMPORTANT]
-> La duración depende del volumen de información, del software instalado y del rendimiento del almacenamiento. Espere hasta que DISM llegue al **100 %**, muestre el mensaje de finalización exitosa y libere la terminal. No interrumpa el proceso ni apague el equipo.
+> Espere a que DISM llegue al **100 %** y muestre el mensaje de finalización. No interrumpa el proceso ni apague el equipo.
 
-<table>
-  <tr>
-    <td align="center"><img src="../pictures/sysprep/07.png" alt="Proceso de captura mediante DISM"><br><sub>Captura en ejecución</sub></td>
-    <td align="center"><img src="../pictures/sysprep/08.png" alt="Finalización exitosa de la captura"><br><sub>Captura finalizada correctamente</sub></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="../pictures/sysprep/07.png" width="45%" alt="Captura en ejecución">
+  <img src="../pictures/sysprep/08.png" width="45%" alt="Captura finalizada">
+</p>
 
+### 13. Verificar la imagen (opcional)
 
-El archivo `install.wim` queda disponible para su implementación en los equipos de destino.
+**Consola:** CMD en WinPE
+
+```cmd
+dism /Get-WimInfo /WimFile:D:\install.wim
+```
+
+Debe listarse el índice 1 con el nombre definido en la captura.
+
+---
 
 **Siguiente paso:** [Aplicación de imagen y secuencias de despliegue](README-03.md)
