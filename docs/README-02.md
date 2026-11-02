@@ -36,8 +36,12 @@ net stop wuauserv
 net stop bits
 net stop cryptsvc
 ```
+> **Resultado esperado:** la consola confirma que cada servicio se detuvo o no se ha iniciado.
 
-> **Resultado esperado:** la consola confirma que cada servicio se detuvo.
+<p align="center">
+  <img src="../pictures/sysprep/05.png" width="32%" alt="Limpieza">
+</p>
+
 
 ### 4. Limpiar el almacén de componentes
 
@@ -49,6 +53,11 @@ dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 
 > **Resultado esperado:** el comando llega al 100 % y finaliza con éxito.
 > `/ResetBase` impide desinstalar las actualizaciones ya instaladas.
+
+<p align="center">
+  <img src="../pictures/sysprep/06.png" width="32%" alt="Limpieza 02">
+</p>
+
 
 ### 5. Limpiar la caché de Windows Update
 
