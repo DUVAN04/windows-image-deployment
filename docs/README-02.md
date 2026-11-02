@@ -154,8 +154,8 @@ C:\Windows\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown
 Arranque desde WinPE o un USB booteable. Verifique las letras de unidad con `diskpart` → `list volume`; en WinPE pueden diferir de las usadas aquí.
 
 ```cmd
-mkdir E:\Scratch
-dism /Capture-Image /ImageFile:E:\install.wim /CaptureDir:C:\ /Name:"Windows Personalizado Rapido" /Description:"Imagen Sysprep optimizada" /Compress:fast /ScratchDir:E:\Scratch
+mkdir D:\Scratch
+dism /Capture-Image /ImageFile:D:\install.wim /CaptureDir:C:\ /Name:"Windows Personalizado Rapido" /Description:"Imagen Sysprep optimizada" /Compress:fast /ScratchDir:D:\Scratch
 ```
 
 | Parámetro | Función |
@@ -164,7 +164,13 @@ dism /Capture-Image /ImageFile:E:\install.wim /CaptureDir:C:\ /Name:"Windows Per
 | `/ImageFile:E:\install.wim` | Ruta y nombre del WIM generado |
 | `/CaptureDir:C:\` | Partición generalizada a capturar |
 | `/Compress:fast` | Compresión rápida; reduce el tiempo frente a `max` |
-| `/ScratchDir:E:\Scratch` | Directorio temporal en disco; evita uso excesivo de RAM |
+| `/ScratchDir:E:\Scratch` | Directorio temporal en disco |
+
+**Consideración:** El tiempo de captura depende del volumen de información y del software instalado. Espere hasta que DISM alcance el **100 %**, finalice la operación y libere la terminal. No interrumpa el proceso ni apague el equipo durante su ejecución.
+
+<p align="center">
+  <img src="../pictures/sysprep/07.png" width="50%" alt="Proceso de captura de imagen mediante DISM">
+</p>
 
 ### 13. Verificar la imagen
 
