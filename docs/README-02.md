@@ -1,3 +1,7 @@
+# Guía de ejecución
+
+---
+
 ## Fase 1 · Preparación
 
 ### 1. Modo Auditoría
@@ -5,10 +9,9 @@
 En la pantalla OOBE, presione `Ctrl + Shift + F3`. El equipo reinicia y entra en modo auditoría con la cuenta de administrador integrada. Cierre la ventana de Sysprep que aparece al ingresar; se usará más adelante.
 
 <p align="center">
-  <img src="../pictures/sysprep/01.png" width="24%" alt="Modo auditoría 1">
-  <img src="../pictures/sysprep/02.png" width="24%" alt="Modo auditoría 2">
-  <img src="../pictures/sysprep/03.png" width="24%" alt="Modo auditoría 3">
-  <img src="../pictures/sysprep/04.png" width="24%" alt="Modo auditoría 4">
+  <img src="../pictures/sysprep/01.png" width="32%" alt="Modo auditoría 1">
+  <img src="../pictures/sysprep/02.png" width="32%" alt="Modo auditoría 2">
+  <img src="../pictures/sysprep/03.png" width="32%" alt="Modo auditoría 3">
 </p>
 
 ### 2. Instalación de aplicaciones
