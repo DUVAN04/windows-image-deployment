@@ -1,5 +1,3 @@
-# Captura y Despliegue de Imágenes Windows 11 (.wim)
-
 > [!NOTE]
 > Este procedimiento **no genera una ISO**. El resultado final es un archivo **`.wim`** con el sistema ya preparado y generalizado.
 
