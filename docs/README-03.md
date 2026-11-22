@@ -51,8 +51,7 @@ Si usa otra estructura, ajuste la ruta exacta donde guardó cada archivo:
 Inicie el equipo desde la USB y en el menú de Ventoy seleccione la ISO de Windows (modo **wimboot** si se solicita). Cuando cargue el instalador, presione <kbd>Shift</kbd> + <kbd>F10</kbd> para abrir una ventana de **CMD**.
 
 <p align="center">
-  <img src="../pictures/deployment/01.png" width="48%" alt="Menú de Ventoy">
-  <img src="../pictures/deployment/02.png" width="48%" alt="CMD en el instalador de Windows">
+  <img src="../pictures/deployment/01.png" width="70%" alt="Menú de Ventoy con la ISO de Windows">
 </p>
 
 <br>
@@ -71,7 +70,7 @@ Inicie el equipo desde la USB y en el menú de Ventoy seleccione la ISO de Windo
 D:\automation\01.bat
 ```
 
-Ajuste la unidad y la ruta según su estructura. Si no conoce la letra de la USB, verifíquela con `diskpart` → `list volume`.
+Ajuste la unidad y la ruta según su estructura. Para identificar la letra de la USB y confirmar que los archivos están en su lugar, liste su contenido con `dir D:\`.
 
 El script ejecuta en orden:
 
@@ -82,10 +81,8 @@ El script ejecuta en orden:
 
 Al finalizar muestra `LISTO. RETIRA LA USB Y REINICIA.` No interrumpa el proceso antes de ese mensaje.
 
-<!-- Imagen o video de la ejecución -->
 <p align="center">
-  <img src="../pictures/deployment/03.png" width="48%" alt="Ejecución de 01.bat">
-  <img src="../pictures/deployment/04.png" width="48%" alt="Script finalizado">
+  <img src="../pictures/deployment/02.png" width="70%" alt="Verificación de la unidad, ejecución de 01.bat y finalización">
 </p>
 
 <br>
