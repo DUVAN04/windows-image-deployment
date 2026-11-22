@@ -1,24 +1,10 @@
-> [!NOTE]
-> Esta guía aplica la imagen `.wim` generada en el [README-02](README-02.md) sobre el equipo destino. El despliegue completo se ejecuta con un único script desde una USB.
-
-## Resumen
-
-| | |
-|---|---|
-| **Herramientas** | Ventoy, DiskPart, DISM, BCDBoot |
-| **Resultado** | Windows desplegado y listo para el primer arranque |
-| **Beneficio** | Despliegue estandarizado y repetible en múltiples equipos |
-
-> [!CAUTION]
-> El proceso **formatea por completo el disco 0**. Debe usarse únicamente en equipos destinados a ser reinstalados.
-
 ## Flujo del procedimiento
 
 ```mermaid
 flowchart LR
     A["Paso 1<br/>Arranque<br/>desde USB"] --> B["Paso 2<br/>Consola<br/>CMD"]
     B --> C["Paso 3<br/>Ejecución<br/>de 01.bat"]
-    C --> D["Paso 4<br/>Primer<br/>arranque"]
+    C --> D["Paso 4<br/>Primer arranque<br/>(sin red)"]
     D -.-> E["Extra<br/>optimizar.ps1<br/>(opcional)"]
 
     classDef f1 fill:#DBEAFE,stroke:#2563EB,stroke-width:2px,color:#1E293B
@@ -38,14 +24,18 @@ flowchart LR
 
 ## Requisitos
 
-USB con [Ventoy](https://www.ventoy.net) que contenga los siguientes archivos, organizados en las carpetas que se prefiera:
+USB con [Ventoy](https://www.ventoy.net) que contenga:
 
-| Archivo | Función |
-|---|---|
-| **ISO de Windows 11** | Entorno de arranque (instalador de Windows) |
-| **`install.wim`** | Imagen generada en el README-02 |
-| [**`01.bat`**](../scripts/01.bat) | Formatea el disco, aplica la imagen y configura el arranque |
-| [**`optimizar.ps1`**](../scripts/optimizar.ps1) | *Opcional.* Optimización posterior al despliegue |
+| Archivo | Ubicación | Función |
+|---|---|---|
+| **ISO de Windows 11** | Cualquier carpeta | Entorno de arranque (instalador de Windows) |
+| **`install.wim`** | Carpeta `automation` | Imagen generada en el README-02 |
+| [**`01.bat`**](../scripts/01.bat) | Carpeta `automation` | Formatea el disco, aplica la imagen y configura el arranque |
+| [**`optimizar.ps1`**](../scripts/optimizar.ps1) | Carpeta `automation` | *Opcional.* Optimización posterior al despliegue |
+
+El script localiza `automation\install.wim` en cualquier unidad, por lo que no depende de la letra que Windows asigne a la USB.
+
+**Condición de red:** desde el primer arranque el equipo debe permanecer **sin cable Ethernet conectado** y **sin conectarse a ninguna red Wi-Fi**. Con conexión a internet, Windows puede exigir una cuenta Microsoft durante la configuración inicial.
 
 <br>
 
@@ -71,13 +61,14 @@ Cuando cargue el instalador de Windows, presione <kbd>Shift</kbd> + <kbd>F10</kb
 D:\automation\01.bat
 ```
 
-Reemplace la ruta según la ubicación del script en su USB. Si la letra de unidad es distinta, verifíquela con `diskpart` → `list volume`. La ruta de `install.wim` se define en la primera línea del script (variable `WIM`).
+Reemplace `D:` por la letra de la USB. Si no la conoce, verifíquela con `diskpart` → `list volume`.
 
 El script ejecuta en orden:
 
 1. **Formateo de unidad:** particiona el disco 0 en GPT/UEFI (EFI, MSR y Windows).
 2. **Aplicación de imagen:** aplica `install.wim` con DISM.
-3. **Configuración del arranque:** habilita `BypassNRO` para continuar sin conexión y registra el arranque UEFI con BCDBoot.
+3. **Bypass de la configuración inicial:** habilita `BypassNRO` en el registro offline, lo que permite omitir el requisito de red y de cuenta Microsoft en el primer arranque.
+4. **Arranque UEFI:** registra el cargador de arranque con BCDBoot.
 
 Al finalizar muestra `LISTO. RETIRA LA USB Y REINICIA.` No interrumpa el proceso antes de ese mensaje.
 
@@ -91,41 +82,23 @@ Al finalizar muestra `LISTO. RETIRA LA USB Y REINICIA.` No interrumpa el proceso
 
 ### 4. Primer arranque
 
-Retire la USB y reinicie. En la configuración inicial (OOBE) continúe sin conexión a internet y cree la cuenta local, que será administradora. La contraseña queda a criterio de quien realiza el despliegue.
-
-Si la opción *No tengo Internet* no aparece, presione <kbd>Shift</kbd> + <kbd>F10</kbd> y ejecute `start ms-cxh:localonly`.
+Retire la USB y reinicie. **Confirme que el cable Ethernet esté desconectado** y no se conecte a ninguna red Wi-Fi. Gracias al bypass aplicado por el script, la configuración inicial (OOBE) permite continuar con la opción *No tengo Internet*: cree la cuenta local, que será administradora. La contraseña queda a criterio de quien realiza el despliegue.
 
 <br>
 <br>
 
 ---
 
-## Extra: optimización del equipo (opcional)
+## Solución de problemas
 
-[`optimizar.ps1`](../scripts/optimizar.ps1) es un script de uso general, probado en producción en distintos entornos y equipos, con resultados positivos en despliegues masivos. Actúa sobre aplicaciones, servicios secundarios y ajustes de experiencia de usuario, sin modificar componentes centrales de Windows, por lo que está diseñado para no comprometer la estabilidad del sistema.
-
-| Área | Qué aplica |
+| Síntoma | Solución |
 |---|---|
-| **Aplicaciones** | Desinstala más de 50 aplicaciones innecesarias (*bloatware*): juegos, redes sociales, noticias, clima y servicios de Xbox |
-| **Servicios** | Deshabilita 24 servicios secundarios sin uso en un entorno de trabajo y más de 15 tareas programadas de telemetría y diagnóstico |
-| **Efectos visuales** | Desactiva animaciones y transparencias básicas, conservando el suavizado de fuentes y las miniaturas |
-| **Privacidad y sugerencias** | Reduce publicidad, sugerencias y envío de datos de uso en Windows, Edge, Chrome, Brave y Office |
-| **Energía y disco** | Plan Equilibrado, inicio rápido desactivado, limpieza de temporales y TRIM en unidades de estado sólido |
-
-Los ajustes de usuario se aplican al perfil por defecto (*Default User*), por lo que **cada usuario nuevo los recibe en su primer inicio de sesión**; los perfiles ya existentes también se actualizan.
-
-**Alcance:** no modifica Windows Update, Windows Defender ni los controladores, y tampoco Office, los navegadores instalados ni Microsoft Store. Antes de deshabilitar los servicios guarda un respaldo de su estado original.
-
-**Ejecución:** desde PowerShell como administrador (reemplace `E:` por la letra de la USB):
-
-```powershell
-powershell -ExecutionPolicy Bypass -File E:\optimizar.ps1
-```
-
-El parámetro `-Fase` permite ejecutar solo una parte: `Config`, `Limpieza` o `Reporte` (solo lectura, sin cambios). Al finalizar se genera un reporte del equipo en `C:\ProgramData\Setup\Reportes`.
+| `No se encuentra automation\install.wim` | Verifique que la USB esté conectada y que la carpeta se llame exactamente `automation` |
+| `Fallo DISM` | Confirme que `install.wim` no esté dañado (cópielo de nuevo a la USB) y que el disco destino tenga espacio suficiente |
+| No aparece la opción *No tengo Internet* | Presione <kbd>Shift</kbd> + <kbd>F10</kbd> y ejecute `start ms-cxh:localonly` |
 
 <br>
 
 ---
 
-**Anterior:** [Creación y captura de la imagen](README-02.md)
+**Anterior:** [Creación y captura de la imagen](README-02.md) · **Siguiente paso:** [Optimización del equipo (opcional)](README-04.md)
