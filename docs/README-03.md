@@ -23,7 +23,7 @@ flowchart LR
 
 ### 1. Preparar la USB
 
-Instale [Ventoy](https://www.ventoy.net) en la USB y copie la ISO de Windows, `01.bat` e `install.wim`. La siguiente estructura es un **ejemplo de referencia**, la utilizada en este proyecto; puede organizarla como prefiera:
+Instale [Ventoy](https://www.ventoy.net) en la USB y copie la ISO de Windows 11, `01.bat` e `install.wim`. La siguiente estructura es un **ejemplo de referencia**, la utilizada en este proyecto; puede organizarla como prefiera:
 
 ```text
 USB (Ventoy)
@@ -34,25 +34,23 @@ USB (Ventoy)
     └── install.wim        # Imagen generada en el README-02
 ```
 
-Si usa otra estructura, ajuste la ruta exacta donde guardó cada archivo:
+Si usa otra estructura, ajuste la ruta exacta de cada archivo: la de `install.wim` en la variable `WIM`, al inicio de `01.bat`, y la de `01.bat` al ejecutarlo en el paso 3.
 
-- **`install.wim`:** edite la variable `WIM`, al inicio de `01.bat`, con su ubicación.
-
-  ```bat
-  set WIM=D:\automation\install.wim
-  ```
-
-- **`01.bat`:** use su ruta al ejecutarlo en el paso 3.
+```bat
+set WIM=D:\automation\install.wim
+```
 
 <br>
 
 ### 2. Arrancar desde la USB
 
-Inicie el equipo desde la USB y en el menú de Ventoy seleccione la ISO de Windows (modo **wimboot** si se solicita). Cuando cargue el instalador, presione <kbd>Shift</kbd> + <kbd>F10</kbd> para abrir una ventana de **CMD**.
+Inicie el equipo desde la USB. En el menú de Ventoy seleccione la ISO de Windows 11 y presione <kbd>Enter</kbd> (si Ventoy ofrece elegir el modo de arranque, seleccione **wimboot**).
 
 <p align="center">
-  <img src="../pictures/deployment/01.png" width="70%" alt="Menú de Ventoy con la ISO de Windows">
+  <img src="../pictures/deployment/01.png" width="70%" alt="Menú de Ventoy con la ISO de Windows 11">
 </p>
+
+Cuando cargue el instalador de Windows, presione <kbd>Shift</kbd> + <kbd>F10</kbd> para abrir una ventana de **CMD**.
 
 <br>
 <br>
@@ -66,11 +64,21 @@ Inicie el equipo desde la USB y en el menú de Ventoy seleccione la ISO de Windo
 > [!CAUTION]
 > El script **formatea por completo el disco 0**. Úselo únicamente en equipos destinados a ser reinstalados.
 
+Desde la CMD ejecute:
+
 ```cmd
-D:\automation\01.bat
+d:
+dir
+automation\01.bat
 ```
 
-Ajuste la unidad y la ruta según su estructura. Para identificar la letra de la USB y confirmar que los archivos están en su lugar, liste su contenido con `dir D:\`.
+1. `d:` cambia a la unidad de la USB.
+2. `dir` permite verificar la unidad: el volumen debe llamarse **Ventoy** y deben verse las carpetas de su estructura. Si no es así, pruebe con otra letra (`e:`, `f:`).
+3. `automation\01.bat` inicia el despliegue.
+
+<p align="center">
+  <img src="../pictures/deployment/02.png" width="70%" alt="Verificación de la unidad, ejecución de 01.bat y finalización">
+</p>
 
 El script ejecuta en orden:
 
@@ -81,10 +89,6 @@ El script ejecuta en orden:
 
 Al finalizar muestra `LISTO. RETIRA LA USB Y REINICIA.` No interrumpa el proceso antes de ese mensaje.
 
-<p align="center">
-  <img src="../pictures/deployment/02.png" width="70%" alt="Verificación de la unidad, ejecución de 01.bat y finalización">
-</p>
-
 <br>
 <br>
 
@@ -94,9 +98,9 @@ Al finalizar muestra `LISTO. RETIRA LA USB Y REINICIA.` No interrumpa el proceso
 
 ### 4. Crear el usuario
 
-Antes de reiniciar, **desconecte el cable Ethernet**; durante todo el primer arranque el equipo debe permanecer **sin red y sin conectarse a ninguna red Wi-Fi**. Con conexión a internet, Windows puede exigir una cuenta Microsoft.
+Antes de reiniciar, **desconecte el cable Ethernet**: durante todo el primer arranque el equipo debe permanecer **sin red y sin conectarse a ninguna red Wi-Fi**. Con conexión a internet, Windows puede exigir una cuenta Microsoft.
 
-Retire la USB y reinicie. Gracias al bypass, la configuración inicial (OOBE) permite continuar con la opción *No tengo Internet*: cree la cuenta local, que será administradora. Si esa opción no aparece, presione <kbd>Shift</kbd> + <kbd>F10</kbd> y ejecute `start ms-cxh:localonly`.
+Retire la USB y reinicie el equipo con `wpeutil reboot`. Gracias al bypass, la configuración inicial (OOBE) permite continuar con la opción *No tengo Internet*: cree la cuenta local, que será administradora. Si esa opción no aparece, presione <kbd>Shift</kbd> + <kbd>F10</kbd> y ejecute `start ms-cxh:localonly`.
 
 <br>
 <br>
