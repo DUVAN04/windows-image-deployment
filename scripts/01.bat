@@ -1,6 +1,7 @@
 @echo off
-set WIM=D:\automation\install.wim
 
+:: ---------- RUTA DE LA IMAGEN (ajustar segun la ubicacion de install.wim en su USB) ----------
+set WIM=D:\automation\install.wim
 if not exist "%WIM%" (echo [ERROR] No se encuentra %WIM% & pause & exit /b 1)
 
 :: ---------- FORMATEO DE UNIDAD (GPT/UEFI, disco 0) ----------

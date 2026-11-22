@@ -23,7 +23,7 @@ flowchart LR
 
 ### 1. Preparar la USB
 
-Instale [Ventoy](https://www.ventoy.net) en la USB y copie los archivos con la siguiente estructura:
+Instale [Ventoy](https://www.ventoy.net) en la USB y copie la ISO de Windows, `01.bat` e `install.wim`. La siguiente estructura es un **ejemplo de referencia**, la utilizada en este proyecto; puede organizarla como prefiera:
 
 ```text
 USB (Ventoy)
@@ -34,7 +34,15 @@ USB (Ventoy)
     └── install.wim        # Imagen generada en el README-02
 ```
 
-La carpeta `automation` debe conservar ese nombre: el script busca allí la imagen en cualquier unidad. La ISO puede ubicarse en cualquier carpeta.
+Si usa otra estructura, ajuste la ruta exacta donde guardó cada archivo:
+
+- **`install.wim`:** edite la variable `WIM`, al inicio de `01.bat`, con su ubicación.
+
+  ```bat
+  set WIM=D:\automation\install.wim
+  ```
+
+- **`01.bat`:** use su ruta al ejecutarlo en el paso 3.
 
 <br>
 
@@ -63,7 +71,7 @@ Inicie el equipo desde la USB y en el menú de Ventoy seleccione la ISO de Windo
 D:\automation\01.bat
 ```
 
-Reemplace `D:` por la letra de la USB; si no la conoce, verifíquela con `diskpart` → `list volume`.
+Ajuste la unidad y la ruta según su estructura. Si no conoce la letra de la USB, verifíquela con `diskpart` → `list volume`.
 
 El script ejecuta en orden:
 
